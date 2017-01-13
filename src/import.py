@@ -30,6 +30,9 @@ def get_notes(task_id, data):
     notes = []
     for n in data['notes']:
         if n['task_id'] == task_id:
+            del n['created_by_request_id']
+            del n['revision']
+            del n['type']
             notes.append(n)
     return notes if notes != [] else None
 
@@ -37,6 +40,11 @@ def get_notes(task_id, data):
 def get_reminder(task_id, data):
     for r in data['reminders']:
         if r['task_id'] == task_id:
+            del r['updated_at']
+            del r['created_at']
+            del r['created_by_request_id']
+            del r['revision']
+            del r['type']
             return r
     return None
 
@@ -45,7 +53,17 @@ def get_subtasks(task_id, data):
     subtasks = []
     for sub in data['subtasks']:
         if sub['task_id'] == task_id:
+            # remove unneeded info
+            if sub['completed'] is True:
+                del sub['completed_at']
+            del sub['created_at']
+            del sub['created_by_id']
+            del sub['created_by_request_id']
+            del sub['revision']
+            del sub['type']
+
             subtasks.append(sub)
+
     return subtasks if subtasks != [] else None
 
 
@@ -53,10 +71,23 @@ def get_tasks(list_id, data):
     tasks = []
     for t in data['tasks']:
         if t['list_id'] == list_id:
+            # add elements that belongs to the task
             t['notes'] = get_notes(t['id'], data)
             t['reminder'] = get_reminder(t['id'], data)
             t['subtasks'] = get_subtasks(t['id'], data)
+
+            # remove unneeded info
+            if t['completed'] is True:
+                del t['completed_by_id']
+                del t['completed_at']
+            del t['created_by_id']
+            del t['created_by_request_id']
+            del t['created_at']
+            del t['revision']
+            del t['type']
+
             tasks.append(t)
+
     return tasks if tasks != [] else None
 
 
@@ -84,7 +115,7 @@ if __name__ == '__main__':
 
     api = get_authed_api_session(auth_file)
     lists = read_wunderlist_data(wunderlist_export_file)
-
+    pp(lists)
 
 
 
