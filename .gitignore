@@ -1,0 +1,24 @@
+
+.idea/
+data/
+
+!data/auth.json
+!data/test_wunderlist.json
+
+# Mac OS X hidden files
+.DS_Store
+Desktop.ini
+
+# Bundler binstubs
+/bin/
+
+# Thumbnail cache files
+._*
+Thumbs.db
+
+# Files that might appear on external disks
+.Spotlight-V100
+.Trashes
+
+# Compiled Python files
+*.pyc
