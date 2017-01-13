@@ -2,6 +2,7 @@ import todoist
 import json
 from pprint import pprint as pp
 
+
 def get_authed_api_session(auth_file):
     # Load user login info
     with open(auth_file) as f:
@@ -24,26 +25,66 @@ def get_authed_api_session(auth_file):
     api = todoist.TodoistAPI(auth['access_token'])
     return api
 
-def reconstruct_lists_structure(data):
+
+def get_notes(task_id, data):
+    notes = []
+    for n in data['notes']:
+        if n['task_id'] == task_id:
+            notes.append(n)
+    return notes if notes != [] else None
+
+
+def get_reminder(task_id, data):
+    for r in data['reminders']:
+        if r['task_id'] == task_id:
+            return r
+    return None
+
+
+def get_subtasks(task_id, data):
+    subtasks = []
+    for sub in data['subtasks']:
+        if sub['task_id'] == task_id:
+            subtasks.append(sub)
+    return subtasks if subtasks != [] else None
+
+
+def get_tasks(list_id, data):
+    tasks = []
+    for t in data['tasks']:
+        if t['list_id'] == list_id:
+            t['notes'] = get_notes(t['id'], data)
+            t['reminder'] = get_reminder(t['id'], data)
+            t['subtasks'] = get_subtasks(t['id'], data)
+            tasks.append(t)
+    return tasks if tasks != [] else None
+
+
+def read_wunderlist_data(data_file):
+    with open(data_file) as f:
+        data = json.loads(f.read())['data']
+
+    ## Reconstruct lists data
     c_lists = {} # constructed lists
 
-    # Construct list
     for list in data['lists']:
         c_lists[list['id']] = {
-            "id"   : list['id'],
-            "title": list['title'],
+            'id'   : list['id'],
+            'title': list['title'],
+            'tasks': get_tasks(list['id'], data)
         }
+
+    return c_lists
+
 
 if __name__ == '__main__':
 
     auth_file = "../data/_auth.json"
-    api = get_authed_api_session(auth_file)
+    wunderlist_export_file = "../data/test_wunderlist.json"
 
-    # Read json file
-    # with open('../data/test_wunderlist.json') as f:
-    #     wunderlist_data = json.loads(f.read())['data']
-    #
-    # constructed_lists = reconstruct_lists_structure(wunderlist_data)
+    api = get_authed_api_session(auth_file)
+    lists = read_wunderlist_data(wunderlist_export_file)
+
 
 
 
