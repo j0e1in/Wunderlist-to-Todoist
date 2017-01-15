@@ -45,6 +45,7 @@ Term equivalence of Wunderlist and Todoist.
 | ---------- | ------------------------- |
 | List       | Project                   |
 | Subtask    | Task with indentation = 2 |
+| Star       | Priority = 2              |
 
 # Limitations
 
