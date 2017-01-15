@@ -31,7 +31,10 @@ def get_notes(task_id, data):
     for n in data['notes']:
         if n['task_id'] == task_id:
             # remove unnecessary info
-            del n['created_by_request_id']
+            if 'created_by_id' in n:
+                del n['created_by_id']
+            if 'created_by_request_id' in n:
+                del n['created_by_request_id']
             del n['revision']
             del n['type']
 
@@ -45,7 +48,8 @@ def get_reminder(task_id, data):
             # remove unnecessary info
             del r['updated_at']
             del r['created_at']
-            del r['created_by_request_id']
+            if 'created_by_request_id' in r:
+                del r['created_by_request_id']
             del r['revision']
             del r['type']
             return r
@@ -60,8 +64,10 @@ def get_subtasks(task_id, data):
             if sub['completed'] is True:
                 del sub['completed_at']
             del sub['created_at']
-            del sub['created_by_id']
-            del sub['created_by_request_id']
+            if 'created_by_id' in sub:
+                del sub['created_by_id']
+            if 'created_by_request_id' in sub:
+                del sub['created_by_request_id']
             del sub['revision']
             del sub['type']
 
@@ -80,10 +86,14 @@ def get_tasks(list_id, data):
 
             # remove unnecessary info
             if t['completed'] is True:
-                del t['completed_by_id']
-                del t['completed_at']
-            del t['created_by_id']
-            del t['created_by_request_id']
+                if 'completed_by_id' in t:
+                    del t['completed_by_id']
+                if 'completed_at' in t:
+                    del t['completed_at']
+            if 'created_by_id' in t:
+                del t['created_by_id']
+            if 'created_by_request_id' in t:
+                del t['created_by_request_id']
             del t['created_at']
             del t['revision']
             del t['type']
