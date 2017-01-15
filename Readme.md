@@ -11,8 +11,11 @@ A tool for importing Wunderlist backup file to Todoist by using its API.
 
 ```
 $ git clone https://github.com/j0e1in/Wunderlist-to-Todoist.git
+
 $ cd Wunderlist-to-Todoist
+
 $ pip install todoist-python
+
 $ python src/import.py -f [path/to/wunderlist_backup_file.json] -a [todoist_access_token]
 
 # Optional argument: -i False (import completed tasks)
