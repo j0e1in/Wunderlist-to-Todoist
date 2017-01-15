@@ -1,6 +1,6 @@
+import argparse
 import todoist
 import json
-from pprint import pprint as pp
 
 
 def get_authed_api_session(auth_file):
@@ -130,16 +130,26 @@ def write_json_to_file(obj_list, dest_file):
 
 if __name__ == '__main__':
 
-    auth_file = "../data/_auth.json"
-    wunderlist_export_file = "../data/test_wunderlist.json"
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', '--wunderlist_backup_file', help='Path to your Wunderlist backup file', required=True)
+    parser.add_argument('-a', '--access_token', help='Your Todoist access token', required=True)
 
-    api = get_authed_api_session(auth_file)
+    args = parser.parse_args()
+    wunderlist_export_file = args.wunderlist_backup_file
+    access_token = args.access_token
+
+    # Initialize Todoist API and then reconstruct lists from Wunderlist
+    # api = get_authed_api_session(auth_file)
+    api = todoist.TodoistAPI(access_token)
     w_lists = read_wunderlist_data(wunderlist_export_file)
 
     # Create a root project for containing lists from Wunderlist
     root_project = api.projects.add('Imported from Wunderlist')
 
-    api.commit()
+    res = api.commit()
+    if 'error' in res: # check access token is valid
+        print("Err: {}".format(res['error']))
+        exit(1)
 
     # Get the item order of the next project
     order = root_project['item_order'] + 1
