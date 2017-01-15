@@ -1,9 +1,8 @@
 import argparse
 import todoist
 import json
-from pprint import pprint as pp
 
-MAX_CMD_COUNTS = 60
+MAX_CMD_COUNTS = 80
 
 def get_authed_api_session(auth_file):
     # Load user login info
@@ -105,7 +104,10 @@ def get_tasks(list_id, data):
 
 
 def is_in_the_same_proj(task, projects):
-    proj_ids = [proj['id'] for proj in projects]
+    # proj_ids = [proj['id'] for proj in projects]
+    proj_ids = []
+    for proj in projects.values():
+        proj_ids.append(proj['id'])
     if task['project_id'] in proj_ids:
         return True
     else:
@@ -141,12 +143,16 @@ def update_cmd_count(api):
         update_cmd_count.count = 0
 
     if update_cmd_count.count >= MAX_CMD_COUNTS:
-        res = api.commit()
-        pp('//////')
-        pp(res)
+        sync(api)
         update_cmd_count.count = 0
     else:
         update_cmd_count.count += 1
+
+
+def sync(api):
+    res = api.commit()
+    # pprint(res)
+    print('syncing...')
 
 
 def write_json_to_file(obj_list, dest_file):
@@ -169,28 +175,28 @@ if __name__ == '__main__':
     parser.add_argument('-a', '--access_token', help='Your Todoist access token', required=True)
     parser.add_argument('-i', '--ignore_complete', help='To ignore completed tasks. (Optional, Default: True)', default=True)
 
+
     args = parser.parse_args()
     wunderlist_export_file = args.wunderlist_backup_file
     access_token = args.access_token
     ignore_complete = args.ignore_complete
+
 
     # Initialize Todoist API and then reconstruct lists from Wunderlist
     # api = get_authed_api_session(auth_file)
     api = todoist.TodoistAPI(access_token)
     w_lists = read_wunderlist_data(wunderlist_export_file)
 
+
     # Create a root project for containing lists from Wunderlist
     root_project = api.projects.add('Imported from Wunderlist')
 
-    res = api.commit()
-    if 'error' in res: # check access token is valid
-        print("Err: {}".format(res['error']))
-        exit(1)
+    sync(api)
 
     # Get the item order of the next project
     order = root_project['item_order'] + 1
 
-    cmd_count = 0 # Command counts for Todoist API, which only accepts upto 199 cmds per sync operation
+    cmd_count = 0 # Command counts for Todoist API, which only accepts upto 100 cmds per sync operation
 
     # Create projects from lists in Wunderlist
     t_projects = {}
@@ -200,39 +206,41 @@ if __name__ == '__main__':
 
         update_cmd_count(api)
 
-    res = api.commit()
-    pp('*****')
-    pp(res)
+    sync(api)
 
     # Add tasks to Todoist
     t_tasks = {}
     for list in w_lists.values():
         for t in list['tasks']:
-            pri = 1 if t['starred'] is False else 2
-            if not ignore_complete and t['completed'] == False: # to ignore completed tasks
-                t_tasks[t['id']] = api.items.add(t['title'], t_projects[list['id']]['id'], priority=pri)
+            pri = 1 if t['starred'] is False else 2 # determine priority
+            if t['completed'] is True: # to ignore completed tasks
+                if not ignore_complete:
+                    print('**')
+                    t_tasks[t['id']] = api.items.add(t['title'], t_projects[list['id']]['id'], priority=pri, checked=1)
             else:
-                t_tasks[t['id']] = api.items.add(t['title'], t_projects[list['id']]['id'], priority=pri, checked=1)
+                t_tasks[t['id']] = api.items.add(t['title'], t_projects[list['id']]['id'], priority=pri)
 
             update_cmd_count(api)
 
-    res = api.commit()
-    pp('-----')
-    pp(res)
+    sync(api)
 
     # Add subtasks, reminder and notes to tasks
     for list in w_lists.values():
         for t in list['tasks']:
             # Add subtasks
-            if 'item_order' not in t_tasks[t['id']]:
-                print()
+            if ignore_complete and t['completed'] is True:
+                continue
             else:
                 order = t_tasks[t['id']]['item_order'] + 1
+
             for sub in t['subtasks']:
-                if not ignore_complete and sub['completed'] == False:  # to ignore completed tasks
-                    tmp_sub = api.items.add(sub['title'], t_projects[list['id']]['id'], indent=2, item_order=order)
+                if sub['completed'] is True:  # to ignore completed tasks
+                    if not ignore_complete:
+                        tmp_sub = api.items.add(sub['title'], t_projects[list['id']]['id'], indent=2, item_order=order, checked=1)
+                    else:
+                        continue
                 else:
-                    tmp_sub = api.items.add(sub['title'], t_projects[list['id']]['id'], indent=2, item_order=order, checked=1)
+                    tmp_sub = api.items.add(sub['title'], t_projects[list['id']]['id'], indent=2, item_order=order)
 
                 update_cmd_count(api)
 
@@ -249,6 +257,6 @@ if __name__ == '__main__':
                 api.notes.add(t_tasks[t['id']]['id'], note['content'])
                 update_cmd_count(api)
 
-    res = api.commit()
-    pp('+++++')
-    pp(res)
+    sync(api)
+
+
