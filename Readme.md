@@ -2,9 +2,37 @@
 
 A tool for importing Wunderlist backup file to Todoist by using its API.
 
+# Requirement
+
+- Python 3.4+
+- todoist-python
+
+# Usage
+
+```
+$ git clone https://github.com/j0e1in/Wunderlist-to-Todoist.git
+$ cd Wunderlist-to-Todoist
+$ pip install todoist-python
+$ python src/import.py -f [path/to/wunderlist_backup_file.json] -a [todoist_access_token]
+
+# Optional argument: -i False (import completed tasks)
+```
+
+***Note:***
+
+You can download Wunderlist backup in Wunderlist > Account Settings > Account > Account Backup > Create Backup
+
+You can get your Todoist access token by opening Todoist client > Todoist Settings > Account > API token
+
+
 # Supported Features
 
-
+- Lists
+- Tasks
+- Subtasks
+- Reminders
+- Notes
+- Starred
 
 # Terms
 
@@ -29,3 +57,7 @@ These limitations are due to lack information is provided in the backup file gen
 
 - Order of tasks in a list
 - Order of subtasks in a task.
+
+# ISSUE
+
+If you have any issue or problem please don't hesitate to open one or email me.
