@@ -37,9 +37,9 @@ You can get your Todoist access token by opening Todoist client > Todoist Settin
     - Lists
     - Tasks
     - Subtasks
+    - Starred
     - Reminders
     - Notes
-    - Starred
 
 - Non-premium Users
     - Lists
