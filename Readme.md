@@ -18,7 +18,10 @@ $ pip install todoist-python
 
 $ python src/import.py -f [path/to/wunderlist_backup_file.json] -a [todoist_access_token]
 
-# Optional argument: -i False (import completed tasks)
+# Optional argument:
+#    -i false => do not completed tasks (defualt: true)
+#    -p false => non-premium account (defualt: true)
+
 ```
 
 ***Note:***
@@ -30,12 +33,23 @@ You can get your Todoist access token by opening Todoist client > Todoist Settin
 
 # Supported Features
 
-- Lists
-- Tasks
-- Subtasks
-- Reminders
-- Notes
-- Starred
+- Premium Uesrs
+    - Lists
+    - Tasks
+    - Subtasks
+    - Reminders
+    - Notes
+    - Starred
+
+- Non-premium Users
+    - Lists
+    - Tasks
+    - Subtasks
+    - Starred
+
+***Note:*** Reminders and Notes are not premium features
+
+***Hint:*** Start free premium trial before import.
 
 # Terms
 

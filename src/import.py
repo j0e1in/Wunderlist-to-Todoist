@@ -149,9 +149,10 @@ def update_cmd_count(api):
         update_cmd_count.count += 1
 
 
-def sync(api):
+def sync(api, log=False):
     res = api.commit()
-    # pprint(res)
+    if log is True:
+        print(res)
     print('syncing...')
 
 
@@ -173,13 +174,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--wunderlist_backup_file', help='Path to your Wunderlist backup file', required=True)
     parser.add_argument('-a', '--access_token', help='Your Todoist access token', required=True)
-    parser.add_argument('-i', '--ignore_complete', help='To ignore completed tasks. (Optional, Default: True)', default=True)
-
+    parser.add_argument('-i', '--ignore-complete', help='Ignore completed tasks when importing. (Optional, Usage: -i false, Default: True)', default='True')
+    parser.add_argument('-p', '--premium', help='Non-premium users should set this option to False to avoid api sync error. (Optional, Usage: -p false, Default: True)', default='True')
 
     args = parser.parse_args()
     wunderlist_export_file = args.wunderlist_backup_file
     access_token = args.access_token
-    ignore_complete = args.ignore_complete
+    ignore_complete = False if args.ignore_complete.lower() == 'false' else True
+    premium = False if args.premium.lower() == 'false' else True
 
 
     # Initialize Todoist API and then reconstruct lists from Wunderlist
@@ -193,10 +195,10 @@ if __name__ == '__main__':
 
     sync(api)
 
-    # Get the item order of the next project
+    # Get the order of the next project
     order = root_project['item_order'] + 1
 
-    cmd_count = 0 # Command counts for Todoist API, which only accepts upto 100 cmds per sync operation
+    cmd_count = 0 # Command counts for Todoist API, which only accepts up to 100 cmds per sync operation
 
     # Create projects from lists in Wunderlist
     t_projects = {}
@@ -206,7 +208,7 @@ if __name__ == '__main__':
 
         update_cmd_count(api)
 
-    sync(api)
+    sync(api) # necessary for getting project info in t_projects returned by server
 
     # Add tasks to Todoist
     t_tasks = {}
@@ -222,7 +224,7 @@ if __name__ == '__main__':
 
             update_cmd_count(api)
 
-    sync(api)
+    sync(api) # necessary for getting task info in t_tasks returned by server
 
     # Add subtasks, reminder and notes to tasks
     for list in w_lists.values():
@@ -241,7 +243,6 @@ if __name__ == '__main__':
                         continue
                 else:
                     tmp_sub = api.items.add(sub['title'], t_projects[list['id']]['id'], indent=2, item_order=order)
-
                 update_cmd_count(api)
 
                 update_item_orders(order, t_tasks, t_projects, api, cmd_count)
@@ -249,13 +250,14 @@ if __name__ == '__main__':
                 order += 1
 
             # Add reminder
-            if t['reminder'] != None:
-                api.reminders.add(t_tasks[t['id']]['id'], service='email', date_string=t['reminder']['date'])
+            if premium:
+                if t['reminder'] != None:
+                    api.reminders.add(t_tasks[t['id']]['id'], service='email', date_string=t['reminder']['date'])
 
-            # Add notes
-            for note in t['notes']:
-                api.notes.add(t_tasks[t['id']]['id'], note['content'])
-                update_cmd_count(api)
+                # Add notes
+                for note in t['notes']:
+                    api.notes.add(t_tasks[t['id']]['id'], note['content'])
+                    update_cmd_count(api)
 
     sync(api)
 
