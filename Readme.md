@@ -19,8 +19,8 @@ $ pip install todoist-python
 $ python src/import.py -f [path/to/wunderlist_backup_file.json] -a [todoist_access_token]
 
 # Optional argument:
-#    -i false => do not completed tasks (defualt: true)
-#    -p false => non-premium account (defualt: true)
+#    `-i false` => do not ignore completed tasks (defualt: true)
+#    `-p false` => non-premium account (defualt: true)
 
 ```
 
